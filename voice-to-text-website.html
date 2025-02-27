@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoiceScript - Speech to Text Converter</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6c63ff;
+      --secondary: #f5f5ff;
+      --dark: #333333;
+      --light: #ffffff;
+    }
+    
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .hero-section {
+      background: linear-gradient(135deg, var(--primary) 0%, #8e84ff 100%);
+      height: 300px;
+      display: flex;
+      align-items: center;
+      color: white;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .text-area {
+      min-height: 200px;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 1.1rem;
+    }
+    
+    .record-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .record-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(108, 99, 255, 0.5);
+    }
+    
+    .record-btn.recording {
+      background-color: #ff4d4d;
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 15px rgba(255, 77, 77, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(255, 77, 77, 0);
+      }
+    }
+    
+    .feature-icon {
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin-bottom: 15px;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      border-radius: 10px;
+      padding: 10px 20px;
+    }
+    
+    .btn-primary:hover {
+      background-color: #5a52e0;
+      border-color: #5a52e0;
+    }
+    
+    .btn-outline-primary {
+      color: var(--primary);
+      border-color: var(--primary);
+      border-radius: 10px;
+      padding: 10px 20px;
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .language-select {
+      border-radius: 10px;
+      padding: 10px;
+    }
+    
+    footer {
+      background-color: var(--dark);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-7">
+          <h1 class="fw-bold display-4">VoiceScript</h1>
+          <p class="lead">Transform your voice into text in seconds. Save to Word with just one click.</p>
+        </div>
+        <div class="col-md-5 text-center d-none d-md-block">
+          <i class="fas fa-microphone-alt fa-5x opacity-75"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Main Content -->
+  <div class="container my-5">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <div class="card p-4 mb-4">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="card-title">Speech to Text</h3>
+              <select id="language-select" class="form-select language-select" style="width: auto;">
+                <option value="en-US">English (US)</option>
+                <option value="en-GB">English (UK)</option>
+                <option value="es-ES">Spanish</option>
+                <option value="fr-FR">French</option>
+                <option value="de-DE">German</option>
+                <option value="zh-CN">Chinese</option>
+                <option value="ja-JP">Japanese</option>
+                <option value="ar-SA">Arabic</option>
+              </select>
+            </div>
+            
+            <textarea id="text-output" class="form-control text-area mb-4" placeholder="Your transcribed text will appear here..."></textarea>
+            
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center gap-3">
+                <div id="record-btn" class="record-btn">
+                  <i class="fas fa-microphone text-white fa-lg"></i>
+                </div>
+                <div>
+                  <span id="status-text">Click to start recording</span>
+                </div>
+              </div>
+              
+              <div class="d-flex gap-2">
+                <button id="clear-btn" class="btn btn-outline-primary">
+                  <i class="fas fa-trash-alt me-2"></i>Clear
+                </button>
+                <button id="copy-btn" class="btn btn-outline-primary">
+                  <i class="fas fa-copy me-2"></i>Copy
+                </button>
+                <button id="save-btn" class="btn btn-primary">
+                  <i class="fas fa-file-word me-2"></i>Save as Word
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Recording Settings -->
+        <div class="card p-4 mb-4">
+          <div class="card-body">
+            <h3 class="card-title mb-3">Recording Settings</h3>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="continuous-recording" checked>
+                  <label class="form-check-label" for="continuous-recording">Continuous Recording</label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="auto-punctuation" checked>
+                  <label class="form-check-label" for="auto-punctuation">Auto Punctuation</label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="filter-profanity">
+                  <label class="form-check-label" for="filter-profanity">Filter Profanity</label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="auto-formatting">
+                  <label class="form-check-label" for="auto-formatting">Auto Formatting</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Features Section -->
+  <section class="bg-light py-5">
+    <div class="container">
+      <h2 class="text-center mb-5">Key Features</h2>
+      <div class="row g-4 justify-content-center">
+        <div class="col-md-4">
+          <div class="card h-100 p-4 text-center">
+            <div class="card-body">
+              <div class="feature-icon">
+                <i class="fas fa-globe"></i>
+              </div>
+              <h4>Multiple Languages</h4>
+              <p>Support for over 8 languages with high accuracy speech recognition.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 p-4 text-center">
+            <div class="card-body">
+              <div class="feature-icon">
+                <i class="fas fa-file-export"></i>
+              </div>
+              <h4>Export to Word</h4>
+              <p>Easily save your transcribed text as a Microsoft Word document with one click.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 p-4 text-center">
+            <div class="card-body">
+              <div class="feature-icon">
+                <i class="fas fa-keyboard"></i>
+              </div>
+              <h4>Smart Formatting</h4>
+              <p>Automatic punctuation and formatting to make your text ready to use.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="py-4 mt-5">
+    <div class="container text-center">
+      <p class="mb-0">© 2025 VoiceScript. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- FileSaver.js for exporting to Word -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <!-- Main JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get DOM elements
+      const recordBtn = document.getElementById('record-btn');
+      const textOutput = document.getElementById('text-output');
+      const statusText = document.getElementById('status-text');
+      const clearBtn = document.getElementById('clear-btn');
+      const copyBtn = document.getElementById('copy-btn');
+      const saveBtn = document.getElementById('save-btn');
+      const languageSelect = document.getElementById('language-select');
+      
+      // SpeechRecognition setup
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        alert("Sorry, your browser doesn't support speech recognition. Please try Chrome or Edge.");
+        recordBtn.disabled = true;
+        statusText.textContent = "Speech recognition not supported";
+        return;
+      }
+      
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = languageSelect.value;
+      
+      let isRecording = false;
+      
+      // Event listeners
+      languageSelect.addEventListener('change', () => {
+        recognition.lang = languageSelect.value;
+        if (isRecording) {
+          recognition.stop();
+          recognition.start();
+        }
+      });
+      
+      recordBtn.addEventListener('click', toggleRecording);
+      
+      function toggleRecording() {
+        if (isRecording) {
+          recognition.stop();
+          recordBtn.classList.remove('recording');
+          statusText.textContent = "Click to start recording";
+          isRecording = false;
+        } else {
+          recognition.start();
+          recordBtn.classList.add('recording');
+          statusText.textContent = "Recording... Click to stop";
+          isRecording = true;
+        }
+      }
+      
+      let finalTranscript = '';
+      
+      recognition.onresult = (event) => {
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        textOutput.value = finalTranscript + interimTranscript;
+      };
+      
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        statusText.textContent = `Error: ${event.error}`;
+        recordBtn.classList.remove('recording');
+        isRecording = false;
+      };
+      
+      recognition.onend = () => {
+        if (isRecording) {
+          recognition.start();
+        }
+      };
+      
+      clearBtn.addEventListener('click', () => {
+        textOutput.value = '';
+        finalTranscript = '';
+      });
+      
+      copyBtn.addEventListener('click', () => {
+        textOutput.select();
+        document.execCommand('copy');
+        
+        // Show feedback
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check me-2"></i>Copied!';
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+        }, 2000);
+      });
+      
+      saveBtn.addEventListener('click', () => {
+        if (!textOutput.value.trim()) {
+          alert("Please record some text before saving.");
+          return;
+        }
+        
+        // Create Word document
+        const header = '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+                       'xmlns:w="urn:schemas-microsoft-com:office:word" ' +
+                       'xmlns="http://www.w3.org/TR/REC-html40">' +
+                       '<head><meta charset="utf-8"><title>VoiceScript Document</title></head><body>';
+        const footer = '</body></html>';
+        const sourceHTML = header + textOutput.value.replace(/\n/g, '<br>') + footer;
+        
+        const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+        const fileDownload = document.createElement("a");
+        
+        document.body.appendChild(fileDownload);
+        fileDownload.href = source;
+        fileDownload.download = 'voicescript_document.doc';
+        fileDownload.click();
+        document.body.removeChild(fileDownload);
+        
+        // Show feedback
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-check me-2"></i>Saved!';
+        setTimeout(() => {
+          saveBtn.innerHTML = originalText;
+        }, 2000);
+      });
+    });
+  </script>
+</body>
+</html>
